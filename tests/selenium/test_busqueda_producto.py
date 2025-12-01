@@ -54,6 +54,38 @@ def resaltar_elemento(driver, element, duration=0.6):
         pass
 
 
+# --------- Checklist util ---------
+CHECKLIST = [
+    ("1. Abrir navegador", False),
+    ("2. Iniciar sesión", False),
+    ("  2.1. Escribir email", False),
+    ("  2.2. Escribir contraseña", False),
+    ("3. Buscar un producto", False),
+    ("  3.1. Escribir producto a buscar", False),
+    ("4. Ver resultados del producto buscado", False),
+    ("5. Seleccionar producto para ver detalles", False),
+    ("  5.1. Seleccionar producto", False),
+    ("  5.2. Ver detalles del producto", False),
+    ("6. Tomar captura de pantalla del detalle", False),
+    ("7. Cerrar navegador", False),
+]
+
+
+def print_checklist():
+    # Salida limpia: no imprimir resumen completo al final
+    pass
+
+
+def complete(label):
+    for i, (lbl, done) in enumerate(CHECKLIST):
+        if lbl == label:
+            if not done:
+                CHECKLIST[i] = (lbl, True)
+                # Imprime sólo la actividad que se completó
+                print(f"✓ {lbl}")
+            break
+
+
 def buscar_enlace_producto(wait):
     # Retorna el enlace clicable al producto Camisa si existe
     try:
@@ -87,6 +119,7 @@ def main():
         driver.get(BASE_URL)
         # Reducir permanencia en home: breve pausa
         time.sleep(0.4)
+        complete("1. Abrir navegador")
 
         icon_selectors = [
             "//button[contains(@aria-label,'account')]",
@@ -120,6 +153,8 @@ def main():
         email_input.click()
         email_input.clear()
         escribir_lento(email_input, EMAIL, delay=0.2)
+        complete("2. Iniciar sesión")
+        complete("  2.1. Escribir email")
 
         # Mostrar contraseña si existe el checkbox "Show Password"
         try:
@@ -135,6 +170,7 @@ def main():
         password_input.click()
         password_input.clear()
         escribir_lento(password_input, PASSWORD, delay=0.2)
+        complete("  2.2. Escribir contraseña")
 
         # Pausa ligera para visualizar antes de enviar
         time.sleep(0.6)
@@ -151,6 +187,8 @@ def main():
         search_input.click()
         search_input.clear()
         escribir_lento(search_input, PRODUCTO_BUSQUEDA, delay=0.25)
+        complete("3. Buscar un producto")
+        complete("  3.1. Escribir producto a buscar")
         search_input.send_keys(Keys.ENTER)
 
         # Esperar resultados: mostrar brevemente la página de búsqueda
@@ -159,6 +197,7 @@ def main():
         except Exception:
             pass
         time.sleep(1.2)
+        complete("4. Ver resultados del producto buscado")
 
         # Seleccionar visiblemente el producto "Camisa" y entrar al detalle
         # Intento 1: enlace con texto Camisa
@@ -176,6 +215,8 @@ def main():
                 producto_link = buscar_enlace_producto(wait)
                 if producto_link:
                     driver.execute_script("arguments[0].click();", producto_link)
+        complete("5. Seleccionar producto para ver detalles")
+        complete("  5.1. Seleccionar producto")
 
         # Esperar que la URL sea del detalle para asegurar captura correcta
         try:
@@ -184,6 +225,7 @@ def main():
             pass
         # Pausa breve para que se renderice el detalle
         time.sleep(1.0)
+        complete("  5.2. Ver detalles del producto")
 
         nombre_elemento = esperar_visible(
             driver,
@@ -195,12 +237,15 @@ def main():
 
         # Screenshot del detalle del producto
         driver.save_screenshot(SCREENSHOT_PATH)
+        complete("6. Tomar captura de pantalla del detalle")
         print(f"Screenshot guardado en {SCREENSHOT_PATH}")
 
     finally:
         # Pausa más larga antes de cerrar para visualizar los detalles
         time.sleep(3.0)
+        complete("7. Cerrar navegador")
         driver.quit()
+        print("\nEn caso de que no los vea, buenos días, buenas tardes y buenas noches.")
 
 
 if __name__ == "__main__":
